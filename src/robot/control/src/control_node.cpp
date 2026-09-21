@@ -7,9 +7,9 @@
 ControlNode::ControlNode()
   : Node("control"),
     control_(robot::ControlCore(this->get_logger())),
-    lookahead_distance_(1.0),
+    lookahead_distance_(1.5),
     goal_tolerance_(0.5),
-    linear_speed_(0.5),
+    linear_speed_(1.5),
     goal_reached_(false) {
   path_sub_ = this->create_subscription<nav_msgs::msg::Path>(
     "/path", 10, [this](const nav_msgs::msg::Path::SharedPtr msg) {
@@ -85,7 +85,7 @@ geometry_msgs::msg::Twist ControlNode::computeVelocity(const geometry_msgs::msg:
 
   geometry_msgs::msg::Twist cmd_vel;
   if (std::fabs(alpha) > M_PI / 2.0) {
-    cmd_vel.angular.z = alpha > 0.0 ? 1.0 : -1.0;
+    cmd_vel.angular.z = alpha > 0.0 ? 1.5 : -1.5;
     return cmd_vel;
   }
   cmd_vel.linear.x = linear_speed_;
