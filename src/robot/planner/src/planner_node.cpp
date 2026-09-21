@@ -9,6 +9,8 @@ PlannerNode::PlannerNode() : Node("planner"), planner_(robot::PlannerCore(this->
     "/map", 10, std::bind(&PlannerNode::mapCallback, this, std::placeholders::_1));
   goal_sub_ = this->create_subscription<geometry_msgs::msg::PointStamped>(
     "/goal_point", 10, std::bind(&PlannerNode::goalCallback, this, std::placeholders::_1));
+  clicked_sub_ = this->create_subscription<geometry_msgs::msg::PointStamped>(
+    "/clicked_point", 10, std::bind(&PlannerNode::goalCallback, this, std::placeholders::_1));
   odom_sub_ = this->create_subscription<nav_msgs::msg::Odometry>(
     "/odom/filtered", 10, std::bind(&PlannerNode::odomCallback, this, std::placeholders::_1));
 
@@ -48,7 +50,7 @@ void PlannerNode::timerCallback()
         state_ = State::WAITING_FOR_GOAL;
         goal_received_ = false;
     }
-    else if ((this->now() - goal_start_time_).seconds() > 30.0) {
+    else if ((this->now() - goal_start_time_).seconds() > 120.0) {
         RCLCPP_WARN(this->get_logger(), "timed out trying to reach the goal, giving up");
         state_ = State::WAITING_FOR_GOAL;
         goal_received_ = false;

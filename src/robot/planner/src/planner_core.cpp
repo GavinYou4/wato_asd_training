@@ -37,6 +37,8 @@ bool PlannerCore::planPath(const nav_msgs::msg::OccupancyGrid& map,
     return false;
   }
 
+  bool start_blocked = map.data[start.y * w + start.x] >= 50;
+
   std::priority_queue<AStarNode, std::vector<AStarNode>, CompareF> open;
   std::unordered_map<CellIndex, double, CellIndexHash> gscore;
   std::unordered_map<CellIndex, CellIndex, CellIndexHash> came_from;
@@ -69,7 +71,13 @@ bool PlannerCore::planPath(const nav_msgs::msg::OccupancyGrid& map,
       if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
 
       int8_t v = map.data[ny * w + nx];
-      if (v >= 50) continue;
+      int limit = 50;
+      if (start_blocked) {
+        double sx = nx - start.x;
+        double sy = ny - start.y;
+        if (sx * sx + sy * sy < 225.0) limit = 100;
+      }
+      if (v >= limit) continue;
 
       double step = k < 4 ? 1.0 : 1.4142;
       if (v > 0) step += v * 0.1;
