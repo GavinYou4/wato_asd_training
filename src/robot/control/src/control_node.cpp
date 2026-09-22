@@ -33,6 +33,7 @@ ControlNode::ControlNode()
 }
 
 void ControlNode::controlLoop() {
+  //stop driving if the robot doesn't have any path or odometry data
   if (!current_path_ || !robot_odom_ || current_path_->poses.empty()) {
     cmd_vel_pub_->publish(geometry_msgs::msg::Twist());
     return;
@@ -41,6 +42,7 @@ void ControlNode::controlLoop() {
   const auto &robot_position = robot_odom_->pose.pose.position;
   const auto &goal_position = current_path_->poses.back().pose.position;
 
+  //if robot is at goal, step driving and publish the message to arrival topic
   if (goal_reached_ || computeDistance(robot_position, goal_position) < goal_tolerance_) {
     if (!goal_reached_) {
       goal_reached_ = true;
@@ -53,12 +55,13 @@ void ControlNode::controlLoop() {
     return;
   }
 
+  //find first point that is at least lookahead_distance_ away from the robot 
   auto lookahead_point = findLookaheadPoint();
   if (!lookahead_point) {
     cmd_vel_pub_->publish(geometry_msgs::msg::Twist());
     return;
   }
-
+  //drive towards the lookahead point
   cmd_vel_pub_->publish(computeVelocity(*lookahead_point));
 }
 
@@ -85,6 +88,7 @@ geometry_msgs::msg::Twist ControlNode::computeVelocity(const geometry_msgs::msg:
 
   geometry_msgs::msg::Twist cmd_vel;
   if (std::fabs(alpha) > M_PI / 2.0) {
+    //turns in place towards target if the angle to the target is more than 90 degrees
     cmd_vel.angular.z = alpha > 0.0 ? 1.5 : -1.5;
     return cmd_vel;
   }
@@ -98,6 +102,7 @@ double ControlNode::computeDistance(const geometry_msgs::msg::Point &a, const ge
 }
 
 double ControlNode::extractYaw(const geometry_msgs::msg::Quaternion &q) {
+  //this is the only part of my code that i don't quite understand yet. I didn't know how to control the wheels, so I fed the formulas from the wikipedia page into chatgpt and it gave me this code, but I'm still trying to decode it.
   double siny_cosp = 2.0 * (q.w * q.z + q.x * q.y);
   double cosy_cosp = 1.0 - 2.0 * (q.y * q.y + q.z * q.z);
   return std::atan2(siny_cosp, cosy_cosp);
