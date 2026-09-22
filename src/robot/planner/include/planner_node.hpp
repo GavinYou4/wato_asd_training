@@ -41,6 +41,7 @@ class PlannerNode : public rclcpp::Node {
     bool goal_received_ = false;
     bool have_map_ = false;
     rclcpp::Time goal_start_time_;
+    rclcpp::Time last_plan_time_;
 };
 
 #endif

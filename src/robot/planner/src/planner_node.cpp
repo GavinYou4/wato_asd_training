@@ -16,6 +16,7 @@ PlannerNode::PlannerNode() : Node("planner"), planner_(robot::PlannerCore(this->
 
   path_pub_ = this->create_publisher<nav_msgs::msg::Path>("/path", 10);
   timer_ = this->create_wall_timer(std::chrono::milliseconds(500), std::bind(&PlannerNode::timerCallback, this));
+  last_plan_time_ = this->now();
 }
 
 void PlannerNode::mapCallback(const nav_msgs::msg::OccupancyGrid::SharedPtr msg)
@@ -55,7 +56,7 @@ void PlannerNode::timerCallback()
         state_ = State::WAITING_FOR_GOAL;
         goal_received_ = false;
     }
-    else {
+    else if ((this->now() - last_plan_time_).seconds() >= 1.0) {
         planPath();
     }
 }
@@ -85,6 +86,7 @@ void PlannerNode::planPath()
     }
 
     path_pub_->publish(path);
+    last_plan_time_ = this->now();
 }
 
 int main(int argc, char ** argv)

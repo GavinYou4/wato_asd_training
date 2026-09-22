@@ -28,6 +28,7 @@ class MapMemoryNode : public rclcpp::Node {
     bool should_update_map_ = false;
     bool have_odom_ = false;
     bool first_update_done_ = false;
+    rclcpp::Time last_map_update_time_;
 
     double robot_x_ = 0.0, robot_y_ = 0.0, robot_yaw_ = 0.0;
     double last_x_ = 0.0, last_y_ = 0.0;

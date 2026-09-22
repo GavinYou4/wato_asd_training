@@ -14,6 +14,7 @@ MapMemoryNode::MapMemoryNode() : Node("map_memory"), map_memory_(robot::MapMemor
   
   //40m x 40m global map 0.1m per cell centered around origin
   map_memory_.initGlobalMap(400, 400, 0.1, -20.0, -20.0);
+  last_map_update_time_ = this->now();
 }
 
 //stores latest costmap message, tells the node that a new costmap has been received
@@ -52,8 +53,9 @@ void MapMemoryNode::updateMap()
     //make sure there is odometry data
     if (!have_odom_) return;
 
-    //make sure there's a new costmap and either its the first update or the robot has travelled far enough for an update
-    if (costmap_updated_ && (should_update_map_ || !first_update_done_)) {
+  //update at least once per second when a new costmap is available, and also whenever the robot has moved far enough
+  const bool periodic_update_due = (this->now() - last_map_update_time_).seconds() >= 1.0;
+  if (costmap_updated_ && (should_update_map_ || !first_update_done_ || periodic_update_due)) {
         if (!first_update_done_) {
             last_x_ = robot_x_;
             last_y_ = robot_y_;
@@ -64,6 +66,7 @@ void MapMemoryNode::updateMap()
         should_update_map_ = false;
         costmap_updated_ = false;
         first_update_done_ = true;
+    last_map_update_time_ = this->now();
     }
 
     if (!first_update_done_) return;

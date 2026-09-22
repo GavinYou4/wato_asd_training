@@ -7,7 +7,7 @@
 const double resolution = 0.1;        
 const int width = 300;                
 const int height = 300;               
-const double inflation_radius = 1.0;   
+const double inflation_radius = 1.5;   
 const int8_t max_cost = 100;
 
 CostmapNode::CostmapNode() : Node("costmap"), costmap_(robot::CostmapCore(this->get_logger())) {
